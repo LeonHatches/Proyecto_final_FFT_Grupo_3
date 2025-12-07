@@ -1,5 +1,5 @@
 import numpy as np
-from scipy import signal
+from scipy import rfft, rfftfreq, irfft
 from scipy.io import wavfile
 import wave
 import struct
@@ -62,4 +62,28 @@ class AudioProcessor:
             return self._process_python(audio_data, sample_rate)
         
     # Implementar lo de C++ en Python 
-                
+    def _process_python(self, audio_data, sample_rate):
+        
+        filtered_audio = self._filter_frequencies(audio_data, sample_rate)
+    
+        return 0
+    
+    # FFT y Filtrado con scipy
+    def _filter_frequencies(self, audio_data, sample_rate):
+        
+        # Aplica FFT
+        spectrum = rfft(audio_data)
+
+        # Obtiene ejes de frecuencias
+        n = len(audio_data)
+        frequencies = rfftfreq(n, d=1/sample_rate)
+
+        # Crea el filtro para frecuencias entre 20 y 200
+        mask = (frequencies >= 20.0) & (frequencies <= 200.0)
+
+        # Crea filtro de multiplicación en el dominio de la frecuencia y FFT inversa
+        filtered_spectrum = spectrum * mask
+        filtered_audio = irfft(filtered_spectrum)
+
+        return filtered_audio
+
