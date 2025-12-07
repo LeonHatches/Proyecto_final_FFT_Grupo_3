@@ -1,0 +1,31 @@
+<div id="disclaimer-site" class="container mt-5">
+    <div class="card shadow p-4 mx-auto" style="max-width: 650px;">
+        <h3 class="text-center mb-3">Aviso Legal</h2>
+
+        <!-- Texto de aviso -->
+        <p class="text-justify">
+            Este sistema analiza señales de audio para detectar posibles anomalías en el pulso. 
+            No reemplaza una evaluación médica profesional. El usuario asume la responsabilidad 
+            del uso de esta herramienta con fines informativos.
+        </p>
+
+        <p>
+            Si presentas síntomas de salud, consulta con un especialista o servicio médico.
+        </p>
+
+        <!-- Cuadro para aceptar -->
+        <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="aceptoCheckbox">
+            <label class="form-check-label" for="aceptoCheckbox">
+                Acepto los términos y condiciones
+            </label>
+        </div>
+
+        <!-- Boton para continuar -->
+        <div class="text-center mt-4">
+            <a id="continuarBtn" href="{% url 'index' %}" class="btn btn-primary btn-lg disabled" tabindex="-1" aria-disabled="true">
+                Continuar
+            </a>
+        </div>
+    </div>
+</div>

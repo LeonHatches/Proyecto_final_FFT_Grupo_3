@@ -1,9 +1,9 @@
 {% extends "monitor/base.html" %}
 
-{% block title %}Inicio{% endblock title %}
+{% block title %}Subir audio{% endblock title %}
 
 {% block content %}
-<h2 class="text-center mb-4">Subir archivo WAV</h2>
+<h2 class="texto-titulo text-center mb-4">Subir archivo WAV</h2>
 
 <div class="row justify-content-center">
     <div class="col-md-6">
@@ -21,15 +21,19 @@
             <!-- Drag & Drop -->
             <div id="drop-area" class="border border-primary rounded p-4 text-center mb-3">
                 <p>Arrastra tu archivo WAV aquí</p>
+                <span style="font-size: 2rem;">
+                    <i class="fa-solid fa-upload"></i>
+                </span>
                 <p class="text-muted">o haz clic para seleccionarlo</p>
             </div>
 
             <!-- Campo real del formulario -->
-            <div class="mb-3">
+            <div class="mb-3" style="display: none;">
                 {{ form.archivo }}
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Subir archivo</button>
+            <button type="submit" class="boton-upload btn btn-primary w-100 fw-bold">Subir archivo</i>
+            </button>
         </form>
 
     </div>

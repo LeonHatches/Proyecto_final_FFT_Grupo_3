@@ -4,31 +4,33 @@
 
 {% block content %}
 
-<h2 class="text-center mb-4">Resultados de análisis</h2>
+<h2 class="texto-titulo text-center mb-4">Resultados de análisis</h2>
 
 <div class="container my-5">
+
+    <!-- Div de pulsaciones por minuto -->
     <div class="card text-center bg-primary text-white mb-4 shadow">
         <div class="card-body py-5">
             <h2 class="card-title display-1 fw-bold" id="bpm-display">
-                {{ bpm_value|default:"---" }}
+                {{ bpm_valor|default:"---" }}
             </h2>
             <p class="card-text h4">Pulsaciones por Minuto (BPM)</p>
         </div>
     </div>
 
     <div class="row">
-        
+
+        <!-- Anomalias detectadas -->
         <div class="col-lg-6 mb-4">
             <div class="card h-100 shadow-sm">
                 <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0">⚠️ Estado y Anomalías Detectadas</h5>
+                    <h5 class="mb-0"><i class="fa-solid fa-triangle-exclamation"></i> Estado y Anomalías Detectadas</h5>
                 </div>
                 <ul class="list-group list-group-flush" id="anomalies-list">
-                    {% if anomalies_list %}
-                        {% for anomaly in anomalies_list %}
+                    {% if anomalias_lista %}
+                        {% for anomalia in anomalias_lista %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <strong>{{ anomaly.name }}</strong>
-                                <span class="badge bg-danger rounded-pill">{{ anomaly.severity }}</span>
+                                <strong>{{ anomalia.nombre }}</strong>
                             </li>
                         {% endfor %}
                     {% else %}
@@ -40,26 +42,28 @@
             </div>
         </div>
 
+        <!-- Información de análisis -->
         <div class="col-lg-6 mb-4">
             <div class="card h-100 shadow-sm">
                 <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Información de la Grabación</h5>
+                    <h5 class="mb-0"><i class="fa-solid fa-circle-info"></i> Información de la Grabación</h5>
                 </div>
                 <div class="card-body">
                     <p><strong>ID de la Grabación:</strong> {{ resultado_id|default:"N/A" }}</p>
                     <p><strong>Fecha de Análisis:</strong> {{ recording.date|date:"d M Y H:i"|default:"N/A" }}</p>
-                    <p><strong>Duración del Análisis:</strong> {{ recording.duration|default:"N/A" }} segundos</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-5">
-        
+    <!-- Botones para hacer otro análisis -->
+    <div class="d-grid gap-4 d-md-flex justify-content-md-center mt-5">
         <a href="{% url 'record' %}" class="btn btn-secondary btn-lg" type="button">
-            <i class="fas fa-redo-alt me-2"></i> Nueva Grabación
+            <i class="fa-solid fa-microphone"></i> Nueva Grabación
         </a>
-        
+        <a href="{% url 'upload' %}" class="btn btn-secondary btn-lg" type="button">
+            <i class="fa-solid fa-file-audio"></i> Subir nuevo archivo
+        </a>
     </div>
 </div>
 
