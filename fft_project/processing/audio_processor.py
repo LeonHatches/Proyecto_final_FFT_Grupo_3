@@ -17,6 +17,16 @@ class AudioProcessor:
         self.audio_data  = None
         self.use_cpp     = CPP_AVAILABLE
 
+    def process_file(self, file_path):
+
+        # Cargar archivo
+        sample_rate, audio_data = self.load_wav_file(file_path)
+        
+        # Procesar
+        result = self.process_audio(audio_data, sample_rate)
+        
+        return result
+    
     def load_wav_file(self, file_path):
         
         try:
@@ -67,8 +77,19 @@ class AudioProcessor:
         filtered_audio    = self._filter_frequencies(audio_data, sample_rate)
         peaks             = self._detect_peaks(filtered_audio, sample_rate)
         bpm, rr_intervals = self._calculate_bpm(peaks, sample_rate)
+        anomalies         = self._detect_anomalies(bpm, rr_intervals)
 
-        return 0
+        result = {
+            'bpm':           float(bpm),
+            'num_picos':     len(peaks),
+            'bradicardia':   anomalies['bradicardia'],
+            'taquicardia':   anomalies['taquicardia'],
+            'irregularidad': anomalies['irregularidad'],
+            'intervalos_rr': [float(x) for x in rr_intervals],
+            'alertas':       anomalies['alertas']
+        }
+
+        return result
     
     # FFT y Filtrado con scipy
     def _filter_frequencies(self, audio_data, sample_rate):
@@ -143,3 +164,49 @@ class AudioProcessor:
             bpm = 0.0
         
         return bpm, rr_intervals
+    
+    def _detect_anomalies(self, bpm, rr_intervals):
+
+        anomalies = {
+            'bradicardia': False,
+            'taquicardia': False,
+            'irregularidad': False,
+            'alertas': []
+        }
+        
+        # Si no hay datos suficientes
+        if bpm == 0 or len(rr_intervals) < 2:
+            anomalies['alertas'].append('Datos Insuficientes')
+            return anomalies
+        
+        # Detectar bradicardia (< 60 BPM)
+        if bpm < 60:
+            anomalies['bradicardia'] = True
+            anomalies['alertas'].append('Bradicardia detectada (BPM < 60)')
+        
+        # Detectar taquicardia (> 100 BPM)
+        if bpm > 100:
+            anomalies['taquicardia'] = True
+            anomalies['alertas'].append('Taquicardia detectada (BPM > 100)')
+        
+        # Calcular SDNN (desviación estándar de intervalos RR)
+        if len(rr_intervals) > 1:
+            sdnn = np.std(rr_intervals)
+            
+            # Detectar irregularidad
+            if sdnn < 0.020:    # < 20ms
+                anomalies['irregularidad'] = True
+                anomalies['alertas'].append(
+                    'Variabilidad muy baja (SDNN < 20ms) - Rigidez cardíaca'
+                )
+            elif sdnn > 0.200:  # > 200ms
+                anomalies['irregularidad'] = True
+                anomalies['alertas'].append(
+                    'Variabilidad muy alta (SDNN > 200ms) - Posible arritmia'
+                )
+        
+        # Si todo está normal
+        if not anomalies['alertas']:
+            anomalies['alertas'].append('Ritmo cardíaco dentro de parámetros normales')
+        
+        return anomalies
