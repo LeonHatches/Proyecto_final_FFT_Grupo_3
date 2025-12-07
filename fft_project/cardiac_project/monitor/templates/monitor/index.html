@@ -1,0 +1,18 @@
+{% extends "monitor/base.html" %}
+
+{% block title %}Inicio{% endblock title %}
+
+{% block content %}
+<!-- Titulo de seccion -->
+<h2 class="texto-titulo text-center mb-4">Detector de anomalias en el pulso</h1>
+
+<!-- Botones de cargar o grabar audio -->
+<div class="d-flex flex-column align-items-center gap-3 mt-4">
+   <a href="{% url 'upload' %}" class="boton-inicio btn btn-primary btn-lg w-75 fw-bold d-flex justify-content-center align-items-center" style="max-width: 400px;">
+        📁 Cargar archivo WAV
+    </a>
+<a href="{% url 'record' %}" class="boton-inicio btn btn-success btn-lg w-75 fw-bold d-flex justify-content-center align-items-center" style="max-width: 400px;">
+        🎤 Grabar audio
+    </a>
+</div>
+{% endblock %}
