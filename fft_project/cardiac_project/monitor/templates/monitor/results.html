@@ -12,7 +12,7 @@
     <div class="card text-center bg-primary text-white mb-4 shadow">
         <div class="card-body py-5">
             <h2 class="card-title display-1 fw-bold" id="bpm-display">
-                {{ bpm_valor|default:"---" }}
+                {{ data.bpm |floatformat:2|default:"---" }}
             </h2>
             <p class="card-text h4">Pulsaciones por Minuto (BPM)</p>
         </div>
@@ -27,10 +27,10 @@
                     <h5 class="mb-0"><i class="fa-solid fa-triangle-exclamation"></i> Estado y Anomalías Detectadas</h5>
                 </div>
                 <ul class="list-group list-group-flush" id="anomalies-list">
-                    {% if anomalias_lista %}
-                        {% for anomalia in anomalias_lista %}
+                    {% if data.alertas %}
+                        {% for alerta in data.alertas %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <strong>{{ anomalia.nombre }}</strong>
+                                <strong>{{ alerta }}</strong>
                             </li>
                         {% endfor %}
                     {% else %}
@@ -50,7 +50,7 @@
                 </div>
                 <div class="card-body">
                     <p><strong>ID de la Grabación:</strong> {{ resultado_id|default:"N/A" }}</p>
-                    <p><strong>Fecha de Análisis:</strong> {{ recording.date|date:"d M Y H:i"|default:"N/A" }}</p>
+                    <p><strong>Fecha de Análisis:</strong> {{ data.fecha }}</p>
                 </div>
             </div>
         </div>

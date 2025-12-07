@@ -1,6 +1,6 @@
 // main.js - Controlador principal de la aplicación
 import { requestMicrophonePermission } from './permission.js';
-import { startRecording, stopRecording, getAudioChunks, resetAudioChunks } from './recorder.js';
+import { startRecording, stopRecording, getAudioChunks, resetAudioChunks, convertToWAV } from './recorder.js';
 import { visualizeAudio, stopVisualization, getAnalyserNode } from './visualizer.js';
 import { uploadAudio, updateVolumeIndicator } from './uploader.js';
 
@@ -108,7 +108,7 @@ async function handleStartRecording() {
 function handleStopRecording() {
   try {
     // Detener grabación con callback
-    stopRecording((audioChunks) => {
+    stopRecording(async (audioChunks) => {
       isRecording = false;
       
       // Detener visualización
@@ -132,17 +132,18 @@ function handleStopRecording() {
         const audioBlob = new Blob(audioChunks, { type: mimeType });
         
         console.log("Blob creado - Tipo:", audioBlob.type, "Tamaño:", audioBlob.size, "bytes");
-        
+        const wavBlob = await convertToWAV(audioBlob);
+
         // Validar tamaño
-        if (audioBlob.size < 1000) {
+        if (wavBlob.size < 1000) {
           showError("La grabación es demasiado corta. Intenta grabar por más tiempo.");
           resetRecordingState();
           return;
         }
         
         // Guardar el blob y mostrar reproductor
-        currentAudioBlob = audioBlob;
-        showAudioPlayer(audioBlob);
+        currentAudioBlob = wavBlob;
+        showAudioPlayer(wavBlob);
         
         console.log("Grabación completada exitosamente");
       } else {

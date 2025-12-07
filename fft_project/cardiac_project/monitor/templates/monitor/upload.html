@@ -116,22 +116,12 @@
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            hideLoading();
-            showSuccess(`¡Archivo WAV "${file.name}" subido correctamente!`);
-            console.log('Respuesta del servidor:', data);
-            
-            // Redirigir a resultados si viene en la respuesta
-            if (data.redirect) {
-                setTimeout(() => {
-                    window.location.href = data.redirect;
-                }, 1500);
+            if (data.status === 'success' && data.redirect_url) {
+                window.location.href = data.redirect_url;
+            } else if (data.status === 'error') {
+                showError(data.message);
             }
         })
         .catch(error => {

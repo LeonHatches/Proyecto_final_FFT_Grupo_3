@@ -69,3 +69,79 @@ export function resetAudioChunks() {
 export function getRecordingState() {
   return mediaRecorder ? mediaRecorder.state : 'inactive';
 }
+
+// Convertir Blob de audio a WAV
+export async function convertToWAV(audioBlob) {
+  return new Promise((resolve, reject) => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const fileReader = new FileReader();
+    
+    fileReader.onload = function(e) {
+      audioContext.decodeAudioData(e.target.result, (audioBuffer) => {
+        const wavBlob = audioBufferToWav(audioBuffer);
+        resolve(wavBlob);
+      }, (error) => {
+        reject(new Error("Error al decodificar audio: " + error));
+      });
+    };
+    
+    fileReader.onerror = () => {
+      reject(new Error("Error al leer el archivo de audio"));
+    };
+    
+    fileReader.readAsArrayBuffer(audioBlob);
+  });
+}
+
+// Convertir AudioBuffer a WAV (PCM 16-bit MONO)
+function audioBufferToWav(buffer) {
+  const numberOfChannels = 1; // MONO
+  const sampleRate = buffer.sampleRate;
+  const format = 1; // PCM
+  const bitDepth = 16;
+  
+  const bytesPerSample = bitDepth / 8;
+  const blockAlign = numberOfChannels * bytesPerSample;
+  
+  // Obtener datos del canal 0 (MONO)
+  const data = buffer.getChannelData(0);
+  const dataLength = data.length * bytesPerSample;
+  const bufferLength = 44 + dataLength;
+  
+  const arrayBuffer = new ArrayBuffer(bufferLength);
+  const view = new DataView(arrayBuffer);
+  
+  // Escribir header WAV (44 bytes)
+  writeString(view, 0, 'RIFF');
+  view.setUint32(4, 36 + dataLength, true);
+  writeString(view, 8, 'WAVE');
+  writeString(view, 12, 'fmt ');
+  view.setUint32(16, 16, true); // Tamaño del chunk fmt
+  view.setUint16(20, format, true); // Formato de audio (1 = PCM)
+  view.setUint16(22, numberOfChannels, true); // Número de canales
+  view.setUint32(24, sampleRate, true); // Frecuencia de muestreo
+  view.setUint32(28, sampleRate * blockAlign, true); // Bytes por segundo
+  view.setUint16(32, blockAlign, true); // Block align
+  view.setUint16(34, bitDepth, true); // Bits por muestra
+  writeString(view, 36, 'data');
+  view.setUint32(40, dataLength, true);
+  
+  // Escribir datos de audio (convertir float32 a int16)
+  let offset = 44;
+  for (let i = 0; i < data.length; i++) {
+    // Clamping entre -1 y 1
+    const sample = Math.max(-1, Math.min(1, data[i]));
+    // Convertir a int16 (rango -32768 a 32767)
+    view.setInt16(offset, sample * 0x7FFF, true);
+    offset += 2;
+  }
+  
+  return new Blob([arrayBuffer], { type: 'audio/wav' });
+}
+
+// Función auxiliar para escribir strings en el DataView
+function writeString(view, offset, string) {
+  for (let i = 0; i < string.length; i++) {
+    view.setUint8(offset + i, string.charCodeAt(i));
+  }
+}

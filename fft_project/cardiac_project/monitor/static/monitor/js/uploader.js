@@ -9,14 +9,20 @@ export function uploadAudio(audioBlob, fileName = "audio.wav") {
       body: formData,
     })
     .then(response => {
-      if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status}`);
-      }
-      return response.json();
+      return response.json().then(data => {  // ← Parsear primero
+        if (!response.ok) {
+          throw new Error(data.message || `Error HTTP: ${response.status}`);
+        }
+        return data;
+      });
     })
     .then(data => {
-      console.log("Archivo subido con éxito", data);
-      resolve(data);
+      if (data.status === 'success' && data.redirect_url) {
+        window.location.href = data.redirect_url;
+        resolve(data);
+      } else {
+        throw new Error(data.message || "No se recibió URL");
+      }
     })
     .catch(error => {
       console.error("Error al subir el archivo", error);
