@@ -1,5 +1,5 @@
 import numpy as np
-from scipy import rfft, rfftfreq, irfft
+from scipy import signal, rfft, rfftfreq, irfft
 from scipy.io import wavfile
 import wave
 import struct
@@ -65,7 +65,7 @@ class AudioProcessor:
     def _process_python(self, audio_data, sample_rate):
         
         filtered_audio = self._filter_frequencies(audio_data, sample_rate)
-    
+        peaks          = self._detect_peaks(filtered_audio, sample_rate)
         return 0
     
     # FFT y Filtrado con scipy
@@ -87,3 +87,36 @@ class AudioProcessor:
 
         return filtered_audio
 
+    # Detección de picos OPTIMIZADA
+    def _detect_peaks(self, audio_data, sample_rate):
+
+        # Calcular envolvente (Esto está excelente, MANTENERLO)
+        envelope = self._calculate_envelope(audio_data, sample_rate)
+
+        # Parámetros de detección
+        height = np.max(envelope) * 0.4
+        distance = int(0.25 * sample_rate) 
+        
+        # Detectar picos
+        peaks, _ = signal.find_peaks(
+            envelope,
+            height=height,
+            distance=distance
+        )
+        
+        return peaks
+    
+    def _calculate_envelope(self, audio_data, sample_rate):
+
+        # Valor absoluto
+        abs_signal = np.abs(audio_data)
+        
+        # Ventana para suavizado (50ms)
+        window_size = int(0.05 * sample_rate)
+        if window_size % 2 == 0:
+            window_size += 1
+        
+        # Suavizado con media móvil
+        envelope = signal.savgol_filter(abs_signal, window_size, 3)
+        
+        return envelope
