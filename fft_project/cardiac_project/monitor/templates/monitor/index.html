@@ -3,5 +3,15 @@
 {% block title %}Inicio{% endblock title %}
 
 {% block content %}
-<h1>Página principal</h1>
+<h1 class="text-center mb-4">Detector de anomalias en el pulso</h1>
+
+<div class="d-flex flex-column align-items-center gap-3 mt-4">
+   <a href="{% url 'upload' %}" class="btn btn-primary btn-lg w-75" style="max-width: 400px;">
+        📁 Cargar archivo WAV
+    </a>
+
+    <a href="{% url 'record' %}" class="btn btn-success btn-lg w-75" style="max-width: 400px;">
+        🎤 Grabar audio
+    </a>
+</div>
 {% endblock %}
