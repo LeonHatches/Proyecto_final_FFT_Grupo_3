@@ -42,7 +42,11 @@ def process_view(request):
     return redirect("results", id=result_id)
 
 class ResultsView(generic.TemplateView):
-    template = "monitor/results.html"
+    template_name = "monitor/results.html"
     
-    # Dar contexto
-    # def get_context_data(self, **kwargs): 
+    def get_context_data(self, **kwargs): 
+        context  = super().get_context_data(**kwargs)
+        result_id = self.kwargs.get('id')
+        context['resultado_id'] = result_id
+        return context
+        
