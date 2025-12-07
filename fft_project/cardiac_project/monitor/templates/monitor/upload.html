@@ -1,0 +1,38 @@
+{% extends "monitor/base.html" %}
+
+{% block title %}Inicio{% endblock title %}
+
+{% block content %}
+<h2 class="text-center mb-4">Subir archivo WAV</h2>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <form method="POST" enctype="multipart/form-data" class="border p-4 rounded bg-light">
+            {% csrf_token %}
+
+            <!-- Errores del formulario -->
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    {{ form.errors }}
+                </div>
+            {% endif %}
+
+            <!-- Drag & Drop -->
+            <div id="drop-area" class="border border-primary rounded p-4 text-center mb-3">
+                <p>Arrastra tu archivo WAV aquí</p>
+                <p class="text-muted">o haz clic para seleccionarlo</p>
+            </div>
+
+            <!-- Campo real del formulario -->
+            <div class="mb-3">
+                {{ form.archivo }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Subir archivo</button>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
