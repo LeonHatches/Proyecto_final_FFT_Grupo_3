@@ -120,3 +120,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Límite de tamaño de subida de archivos (50MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB en bytes
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB en bytes
