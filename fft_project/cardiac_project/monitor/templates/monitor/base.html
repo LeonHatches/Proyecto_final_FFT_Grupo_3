@@ -10,19 +10,25 @@
     <link rel="stylesheet" href="{% static 'monitor/style.css' %}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="/">
-                <i class="fas fa-heartbeat"></i> Detector de anomalias en el pulso</a>
+                <img src="{% static 'monitor/images/heart-icon.svg' %}" alt="Heart" class="navbar-icon">
+                Detector de anomalías en el pulso
+            </a>
         </div>
     </nav>
+    
     <main class="container my-4">
         {% block content %}{% endblock content %}
     </main>
 
     <footer>
-        <div class="container text-center py-3">
-            <p class="text-white small">&copy; 2025 Detector de anomalias en el pulso.</p>
+        <div class="container text-center">
+            <p>
+                <img src="{% static 'monitor/images/heart-icon.svg' %}" alt="Heart" class="footer-icon">
+                &copy; 2025 Detector de anomalías en el pulso.
+            </p>
         </div>
     </footer>
 </body>
