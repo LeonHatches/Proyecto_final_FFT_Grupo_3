@@ -64,8 +64,10 @@ class AudioProcessor:
     # Implementar lo de C++ en Python 
     def _process_python(self, audio_data, sample_rate):
         
-        filtered_audio = self._filter_frequencies(audio_data, sample_rate)
-        peaks          = self._detect_peaks(filtered_audio, sample_rate)
+        filtered_audio    = self._filter_frequencies(audio_data, sample_rate)
+        peaks             = self._detect_peaks(filtered_audio, sample_rate)
+        bpm, rr_intervals = self._calculate_bpm(peaks, sample_rate)
+
         return 0
     
     # FFT y Filtrado con scipy
@@ -120,3 +122,24 @@ class AudioProcessor:
         envelope = signal.savgol_filter(abs_signal, window_size, 3)
         
         return envelope
+    
+    def _calculate_bpm(self, peaks, sample_rate):
+
+        if len(peaks) < 2:
+            return 0.0, []
+        
+        # Calcular intervalos RR (en segundos)
+        rr_intervals = []
+        for i in range(len(peaks) - 1):
+            interval_samples = peaks[i + 1] - peaks[i]
+            interval_seconds = interval_samples / sample_rate
+            rr_intervals.append(interval_seconds)
+        
+        # BPM promedio
+        if len(rr_intervals) > 0:
+            avg_rr = np.mean(rr_intervals)
+            bpm = 60.0 / avg_rr if avg_rr > 0 else 0.0
+        else:
+            bpm = 0.0
+        
+        return bpm, rr_intervals
