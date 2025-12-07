@@ -1,42 +1,174 @@
 {% extends "monitor/base.html" %}
+{% load static %}
 
 {% block title %}Subir audio{% endblock title %}
 
 {% block content %}
-<h2 class="texto-titulo text-center mb-4">Subir archivo WAV</h2>
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
+<div class="upload-container">
+    <!-- Header -->
+    <div class="header-section">
+        <h1 class="page-title">Subir Archivo WAV</h1>
+        <p class="page-subtitle">Arrastra o selecciona tu archivo de audio para análisis</p>
+    </div>
 
-        <form method="POST" enctype="multipart/form-data" class="border p-4 rounded bg-light">
-            {% csrf_token %}
+    <!-- Mensajes -->
+    <div id="errorMessage" class="alert alert-danger" style="display: none;" role="alert"></div>
+    <div id="successMessage" class="alert alert-success" style="display: none;" role="alert"></div>
 
-            <!-- Errores del formulario -->
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                    {{ form.errors }}
-                </div>
-            {% endif %}
-
-            <!-- Drag & Drop -->
-            <div id="drop-area" class="border border-primary rounded p-4 text-center mb-3">
-                <p>Arrastra tu archivo WAV aquí</p>
-                <span style="font-size: 2rem;">
-                    <i class="fa-solid fa-upload"></i>
-                </span>
-                <p class="text-muted">o haz clic para seleccionarlo</p>
-            </div>
-
-            <!-- Campo real del formulario -->
-            <div class="mb-3" style="display: none;">
-                {{ form.archivo }}
-            </div>
-
-            <button type="submit" class="boton-upload btn btn-primary w-100 fw-bold">Subir archivo</i>
-            </button>
-        </form>
-
+    <!-- Card de upload -->
+    <div class="upload-card">
+        <div id="dropZone">
+            <img src="{% static 'monitor/images/upload-icon.svg' %}" alt="Upload" class="drop-icon-img">
+            <h3 class="drop-title">Arrastra tu archivo WAV aquí</h3>
+            <p class="drop-text">o haz clic para seleccionar</p>
+            <p class="drop-hint">Solo archivos .WAV • Tamaño máximo: 50MB</p>
+        </div>
+        <input type="file" id="fileInput" accept=".wav" style="display: none;">
     </div>
 </div>
+
+<!-- Loading Spinner -->
+<div id="loadingSpinner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+    <div class="spinner-border text-light" role="status" style="width: 70px; height: 70px;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <div class="text-white mt-3 loading-text">Procesando archivo WAV...</div>
+</div>
+
+<!-- JavaScript para Drag & Drop -->
+<script type="module">
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+
+    // Drag & Drop handlers
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            processFile(files[0]);
+        }
+    });
+
+    dropZone.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const files = e.target.files;
+        if (files.length > 0) {
+            processFile(files[0]);
+        }
+    });
+
+    function processFile(file) {
+        // Validar SOLO archivos WAV
+        const fileName = file.name.toLowerCase();
+        if (!fileName.endsWith('.wav')) {
+            showError('Solo se aceptan archivos .WAV. Tu archivo: ' + file.name);
+            return;
+        }
+        
+        // Validar tamaño (máximo 50MB)
+        const maxSize = 50 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showError('El archivo es demasiado grande. Tamaño máximo: 50MB');
+            return;
+        }
+        
+        // Validar que sea un archivo de audio
+        if (!file.type.includes('audio') && !file.type.includes('wav')) {
+            showError('El archivo no es un audio válido. Asegúrate de subir un archivo .WAV');
+            return;
+        }
+        
+        // Todo OK, subir archivo
+        uploadFile(file);
+    }
+
+    function uploadFile(file) {
+        showError('');
+        showSuccess('');
+        showLoading();
+        
+        const formData = new FormData();
+        formData.append('audio', file, file.name);
+        
+        fetch('/process/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            hideLoading();
+            showSuccess(`¡Archivo WAV "${file.name}" subido correctamente!`);
+            console.log('Respuesta del servidor:', data);
+            
+            // Redirigir a resultados si viene en la respuesta
+            if (data.redirect) {
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 1500);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showError('Error al subir el archivo: ' + error.message);
+            console.error('Error:', error);
+        });
+    }
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = message ? 'block' : 'none';
+        if (message) {
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+    }
+
+    function showSuccess(message) {
+        successMessage.textContent = message;
+        successMessage.style.display = message ? 'block' : 'none';
+        if (message) {
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
+        }
+    }
+
+    function showLoading() {
+        loadingSpinner.style.display = 'flex';
+    }
+
+    function hideLoading() {
+        loadingSpinner.style.display = 'none';
+    }
+</script>
+
 
 {% endblock %}
