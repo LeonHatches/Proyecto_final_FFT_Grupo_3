@@ -5,6 +5,37 @@
 {% block content %}
 <h1 class="text-center mb-4">Detector de anomalias en el pulso</h1>
 
+
+<div class="container mt-5">
+    <div class="card shadow p-4 mx-auto" style="max-width: 650px;">
+        <h2 class="text-center mb-3">Aviso Legal</h2>
+
+        <p class="text-justify">
+            Este sistema analiza señales de audio para detectar posibles anomalías en el pulso. 
+            No reemplaza una evaluación médica profesional. El usuario asume la responsabilidad 
+            del uso de esta herramienta con fines informativos.
+        </p>
+
+        <p>
+            Si presentas síntomas de salud, consulta con un especialista o servicio médico.
+        </p>
+
+        <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="aceptoCheckbox">
+            <label class="form-check-label" for="aceptoCheckbox">
+                Acepto los términos y condiciones
+            </label>
+        </div>
+
+        <div class="text-center mt-4">
+            <a id="continuarBtn" href="{% url 'index' %}" class="btn btn-primary btn-lg disabled" tabindex="-1" aria-disabled="true">
+                Continuar
+            </a>
+        </div>
+    </div>
+</div>
+
+
 <div class="d-flex flex-column align-items-center gap-3 mt-4">
    <a href="{% url 'upload' %}" class="btn btn-primary btn-lg w-75" style="max-width: 400px;">
         📁 Cargar archivo WAV

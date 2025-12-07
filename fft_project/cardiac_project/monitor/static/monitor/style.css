@@ -10,7 +10,6 @@ main {
     flex: 1;
 }
 
-/* Estilo del pie de página */
 footer {
     background-color: #343a40;
     color: #ffffff;
@@ -21,4 +20,8 @@ footer {
 .navbar-brand {
     font-weight: bold;
     font-size: 1.2em;
+}
+
+.text-justify {
+    text-align: justify;
 }
