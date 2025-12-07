@@ -6,7 +6,7 @@ import struct
 
 # Intenta importar el módulo C++
 try:
-    from processing.cpp_bridge import process_audio
+    from processing.cpp_bridge import process_audio_cpp, CPP_AVAILABLE
 except ImportError:
     CPP_AVAILABLE = False
 
@@ -49,3 +49,17 @@ class AudioProcessor:
 
     def _normalize_audio(self, audio_int16):
         return audio_int16.astype(np.float64) / 32768.0
+    
+    def process_audio(self, audio_data, sample_rate):
+        
+        try:
+            if self.use_cpp and CPP_AVAILABLE:
+                return process_audio_cpp(audio_data.tolist(), sample_rate)
+            else:
+                raise Exception("Error de procesamiento eficiente")
+            
+        except Exception as e:
+            return self._process_python(audio_data, sample_rate)
+        
+    # Implementar lo de C++ en Python 
+                
