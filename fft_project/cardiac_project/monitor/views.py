@@ -3,8 +3,10 @@ from django.views import View, generic
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from processing.audio_processor import AudioProcessor
 from . import forms
 import uuid
+import traceback
 
 class IndexView(generic.TemplateView):
     template_name = "monitor/index.html"
@@ -12,7 +14,6 @@ class IndexView(generic.TemplateView):
 class UploadView(generic.FormView):
     template_name = "monitor/upload.html"
     form_class = forms.UploadForm
-    success_url = "/process/"
     
     def form_valid(self, form):
         # Guardar el archivo subido
@@ -20,7 +21,14 @@ class UploadView(generic.FormView):
         filename = default_storage.save(f"uploads/{audio_file.name}", audio_file)
         
         # Procesar y redirigir a resultados
-        result_id = uuid.uuid4().hex[:10]
+        result_id, error_message = run_analysis(filename, self.request)
+        
+        if not result_id:
+            return render(self.request, "monitor/upload.html", {
+                "form": form,
+                "error": f"Error al procesar: {error_message}"
+            })
+
         return redirect("results", id=result_id)
 
 class RecordView(generic.TemplateView):
@@ -35,14 +43,6 @@ def process_view(request):
     if "audio" in request.FILES:
         audio_file = request.FILES["audio"]
         filename = default_storage.save(f"uploads/{audio_file.name}", audio_file)
-        
-        # Retornar JSON para JavaScript
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Archivo recibido correctamente',
-            'file_name': audio_file.name,
-            'file_size': audio_file.size
-        })
 
     # Archivo subido desde <input type="file">
     elif "audio_file" in request.FILES:
@@ -61,12 +61,23 @@ def process_view(request):
         }, status=400)
 
     # Seccion para procesar audio (FFT, etc.)
-    # TODO: Implementar procesamiento de audio
-
-    # Simulacion de ID
-    result_id = uuid.uuid4().hex[:10]
-
-    return redirect("results", id=result_id)
+    # Seccion para procesar audio
+    if filename:
+        result_id, error_message = run_analysis(filename, request)
+        
+        if result_id:
+            return JsonResponse({
+                'status': 'success',
+                'redirect_url': f'/results/{result_id}/',
+                'result_id': result_id
+            })
+        else:
+            return JsonResponse({
+                'status': 'error', 
+                'message': f'Fallo en análisis: {error_message}'
+            }, status=500)
+            
+    return JsonResponse({'status': 'error', 'message': 'Error al abrir el archivo'}, status=500)
 
 class ResultsView(generic.TemplateView):
     template_name = "monitor/results.html"
@@ -74,6 +85,26 @@ class ResultsView(generic.TemplateView):
     def get_context_data(self, **kwargs): 
         context  = super().get_context_data(**kwargs)
         result_id = self.kwargs.get('id')
+        datos_analisis = self.request.session.get(f'analysis_{result_id}')
         context['resultado_id'] = result_id
+        context['data'] = datos_analisis
         return context
         
+def run_analysis(filename, request):
+
+    try:
+        file_path = default_storage.path(filename)
+        processor = AudioProcessor()
+        results   = processor.process_file(file_path)
+        result_id = uuid.uuid4().hex[:10]
+        request.session[f'analysis_{result_id}'] = results
+
+        return result_id, None
+    except Exception as e:
+            # Imprime el error completo en la consola negra para que lo veas
+            print("\n" + "!"*30)
+            print("ERROR EN AUDIO_PROCESSOR:")
+            print(e)
+            traceback.print_exc() 
+            print("!"*30 + "\n")
+            return None, str(e)
