@@ -49,7 +49,76 @@ void ifft(std::vector<std::complex<double>>& X) {
     for (auto &c : X) c = std::conj(c) / (double)X.size();
 }
 
+// Filtro de frecuencias 20–200 Hz (máscara en frecuencia)
+std::vector<double> filtrar_frecuencias(
+    const std::vector<double>& audio, 
+    double sample_rate)
+{
+    size_t N = audio.size();
+    std::vector<std::complex<double>> spectrum(N);
 
+    // Copiar señal real → complejo
+    for (size_t i = 0; i < N; i++)
+        spectrum[i] = std::complex<double>(audio[i], 0.0);
+
+    // FFT
+    fft(spectrum);
+
+    // Crear máscara
+    for (size_t i = 0; i < N; i++) {
+        double freq = (sample_rate * i) / N;
+
+        if (freq < 20.0 || freq > 200.0)
+            spectrum[i] = 0.0;  // filtrar fuera del rango
+    }
+
+    // FFT inversa
+    ifft(spectrum);
+
+    // Volver a señal real
+    std::vector<double> filtered(N);
+    for (size_t i = 0; i < N; i++)
+        filtered[i] = spectrum[i].real();
+
+    return filtered;
+}
+
+// Calcular envolvente (abs + suavizado)
+std::vector<double> calcular_envolvente(
+    const std::vector<double>& audio,
+    double sample_rate)
+{
+    size_t N = audio.size();
+    std::vector<double> abs_signal(N);
+
+    // Valor absoluto
+    for (size_t i = 0; i < N; i++)
+        abs_signal[i] = std::abs(audio[i]);
+
+    // Tamaño de ventana de 50 ms
+    int window_size = std::max(3, (int)(0.05 * sample_rate));
+    if (window_size % 2 == 0) window_size++;
+
+    std::vector<double> envelope(N);
+    int half = window_size / 2;
+
+    // Media móvil simple
+    for (size_t i = 0; i < N; i++) {
+        double sum = 0.0;
+        int count = 0;
+
+        for (int j = -half; j <= half; j++) {
+            int idx = i + j;
+            if (idx >= 0 && idx < N) {
+                sum += abs_signal[idx];
+                count++;
+            }
+        }
+        envelope[i] = sum / count;
+    }
+
+    return envelope;
+}
 
 // PYBIND11: Exponer a Python
 PYBIND11_MODULE(cardiac_native, m) {
