@@ -1,5 +1,6 @@
 import numpy as np
-from scipy import signal, rfft, rfftfreq, irfft
+from scipy import signal
+from scipy.fft import rfft, rfftfreq, irfft
 from scipy.io import wavfile
 import wave
 import struct
