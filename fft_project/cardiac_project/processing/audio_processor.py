@@ -2,6 +2,7 @@ import numpy as np
 from scipy import signal
 from scipy.fft import rfft, rfftfreq, irfft
 import wave
+from datetime import datetime
 
 # Intenta importar el módulo C++
 try:
@@ -53,7 +54,7 @@ class AudioProcessor:
         except FileNotFoundError:
             raise ValueError("Archivo no encontrado")
         except Exception as e:
-            ValueError("Error al leer WAV")
+            raise ValueError("Error al leer WAV")
 
 
     def _normalize_audio(self, audio_int16):
@@ -77,8 +78,10 @@ class AudioProcessor:
         peaks             = self._detect_peaks(filtered_audio, sample_rate)
         bpm, rr_intervals = self._calculate_bpm(peaks, sample_rate)
         anomalies         = self._detect_anomalies(bpm, rr_intervals)
+        fecha = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
         result = {
+            'fecha':         fecha,
             'bpm':           float(bpm),
             'num_picos':     len(peaks),
             'bradicardia':   anomalies['bradicardia'],
@@ -206,6 +209,6 @@ class AudioProcessor:
         
         # Si todo está normal
         if not anomalies['alertas']:
-            anomalies['alertas'].append('Ritmo cardíaco dentro de parámetros normales')
+            anomalies['alerta'] = None
         
         return anomalies
