@@ -1,18 +1,24 @@
 {% extends "monitor/base.html" %}
+{% load static %}
 
 {% block title %}Inicio{% endblock title %}
 
 {% block content %}
-<!-- Titulo de seccion -->
-<h2 class="texto-titulo text-center mb-4">Detector de anomalias en el pulso</h1>
 
-<!-- Botones de cargar o grabar audio -->
-<div class="d-flex flex-column align-items-center gap-3 mt-4">
-   <a href="{% url 'upload' %}" class="boton-inicio btn btn-primary btn-lg w-75 fw-bold d-flex justify-content-center align-items-center" style="max-width: 400px;">
-        📁 Cargar archivo WAV
-    </a>
-<a href="{% url 'record' %}" class="boton-inicio btn btn-success btn-lg w-75 fw-bold d-flex justify-content-center align-items-center" style="max-width: 400px;">
-        🎤 Grabar audio
-    </a>
+<div class="home-container">
+    <h2 class="home-title">Detector de anomalías en el pulso</h2>
+    
+    <div class="buttons-container">
+        <a href="{% url 'upload' %}" class="home-button btn-upload">
+            <img src="{% static 'monitor/images/upload-icon2.svg' %}" alt="Upload" class="button-icon">
+            <span class="button-text">Cargar archivo WAV</span>
+        </a>
+        
+        <a href="{% url 'record' %}" class="home-button btn-record">
+            <img src="{% static 'monitor/images/microphone-icon.svg' %}" alt="Microphone" class="button-icon microphone-icon">
+            <span class="button-text">Grabar audio</span>
+        </a>
+    </div>
 </div>
+
 {% endblock %}
