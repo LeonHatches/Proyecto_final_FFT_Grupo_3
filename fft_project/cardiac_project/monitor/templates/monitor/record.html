@@ -1,0 +1,34 @@
+{% extends "monitor/base.html" %}
+
+{% block title %}Grabar{% endblock title %}
+
+{% block content %}
+
+<h2 class="text-center mb-4">Grabadora de Audio</h2>
+
+<div class="row justify-content-center">
+    <div class="col md-6">
+        <!-- Canvas -->
+        <canvas id="canva-ondas"></canvas>
+
+        <!-- Temporizador -->
+        <p class="h3 mt-4 mb-4 text-center">
+            <span id="temporizador">00:00</span>
+        </p>
+
+        <!-- Boton para grabar -->
+        <div class="container text-center">
+            <button id="boton-grabar" class="btn btn-danger btn-lg rounded-circle p-4"></button>
+        </div>
+
+        <!-- Controles después de grabar -->
+        <div id="controls" class="mt-4" style="display: none;">
+            <audio id="audio-play" controls class="w-100 mb-3"></audio>
+            <button id="boton-guardar" class="btn btn-success me-2">Guardar</button>
+            <button id="boton-cancelar" class="btn btn-secondary">Cancelar</button>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
