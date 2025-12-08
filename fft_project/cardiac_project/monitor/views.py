@@ -11,9 +11,22 @@ import traceback
 class IndexView(generic.TemplateView):
     template_name = "monitor/index.html"
 
+    def post(self, request, *args, **kwargs):
+        if 'terminos_aceptados' in request.POST:
+            request.session['terminos_aceptados'] = True
+            return redirect(request.path)
+
+        return super().post(request, *args, **kwargs)
+
 class UploadView(generic.FormView):
     template_name = "monitor/upload.html"
     form_class = forms.UploadForm
+
+    # def post(self, request, *args, **kwargs):
+    #     if 'terminos_aceptados' in request.POST:
+    #         request.session['terminos_aceptados'] = True
+    #         return redirect(request.path)
+    #     return super().post(request, *args, **kwargs)
     
     def form_valid(self, form):
         # Guardar el archivo subido
@@ -33,6 +46,12 @@ class UploadView(generic.FormView):
 
 class RecordView(generic.TemplateView):
     template_name = "monitor/record.html"
+
+    def post(self, request, *args, **kwargs):
+        if 'terminos_aceptados' in request.POST:
+            request.session['terminos_aceptados'] = True
+            return redirect(request.path)
+        return super().get(request, *args, **kwargs)
 
 @csrf_exempt
 def process_view(request):
@@ -81,7 +100,13 @@ def process_view(request):
 
 class ResultsView(generic.TemplateView):
     template_name = "monitor/results.html"
-    
+
+    def post(self, request, *args, **kwargs):
+        if 'terminos_aceptados' in request.POST:
+            request.session['terminos_aceptados'] = True
+            return redirect(request.path)
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs): 
         context  = super().get_context_data(**kwargs)
         result_id = self.kwargs.get('id')
