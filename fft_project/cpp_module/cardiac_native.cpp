@@ -120,6 +120,60 @@ std::vector<double> calcular_envolvente(
     return envelope;
 }
 
+// Detectar picos sobre la envolvente
+std::vector<int> detectar_picos(
+    const std::vector<double>& env,
+    double sample_rate)
+{
+    std::vector<int> peaks;
+
+    double max_env = *std::max_element(env.begin(), env.end());
+    double height = max_env * 0.40;
+    int min_distance = (int)(0.25 * sample_rate);
+
+    int last_peak = -min_distance;
+
+    for (int i = 1; i < (int)env.size() - 1; i++) {
+        if (env[i] > height &&
+            env[i] > env[i-1] &&
+            env[i] > env[i+1] &&
+            (i - last_peak) >= min_distance)
+        {
+            peaks.push_back(i);
+            last_peak = i;
+        }
+    }
+
+    return peaks;
+}
+
+// Calcular BPM y RR 
+std::pair<double, std::vector<double>> calcular_bpm_rr(
+    const std::vector<int>& peaks,
+    double sample_rate)
+{
+    std::vector<double> rr;
+
+    if (peaks.size() < 2)
+        return {0.0, rr};
+
+    for (size_t i = 0; i < peaks.size() - 1; i++) {
+        double interval = 
+            (double)(peaks[i+1] - peaks[i]) / sample_rate;
+        rr.push_back(interval);
+    }
+
+    if (rr.empty()) return {0.0, rr};
+
+    double mean_rr = 0.0;
+    for (double r : rr) mean_rr += r;
+    mean_rr /= rr.size();
+
+    double bpm = 60.0 / mean_rr;
+
+    return {bpm, rr};
+}
+
 // PYBIND11: Exponer a Python
 PYBIND11_MODULE(cardiac_native, m) {
 
