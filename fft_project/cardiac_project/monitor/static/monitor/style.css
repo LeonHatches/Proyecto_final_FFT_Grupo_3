@@ -75,6 +75,79 @@ footer .footer-icon {
 }
 
 /* ========================================
+   AVISO DE TERMINOS Y CONDICIONES
+   ======================================== */
+.aviso-modal-content {
+    border-radius: 20px;
+    border: none;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #19282A 0%, #335153 100%);
+    box-shadow: 0 10px 30px rgba(25, 40, 42, 0.25);
+}
+
+
+.aviso-modal-header {
+    background: linear-gradient(135deg, #335153 0%, #19282A 100%);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    color: white;
+    padding: 1.5rem 1.8rem;
+    text-align: center;
+    border-bottom: none;
+}
+
+.aviso-modal-body {
+    padding: 2rem 1.8rem;
+    background: #f8f9fa;
+}
+
+.aviso-text {
+    color: #335153;
+    font-size: 1rem;
+    line-height: 1.55rem;
+    margin-bottom: 1rem;
+}
+
+.aviso-check .form-check-input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.aviso-check label {
+    margin-left: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #19282A;
+}
+
+.aviso-modal-footer {
+    padding: 1.5rem 1.8rem;
+    border-top: none;
+    background: #f8f9fa;
+}
+
+.aviso-btn {
+    background: linear-gradient(135deg, #65A2A6 0%, #4C797D 100%);
+    border: none;
+    font-weight: 600;
+    padding: 1rem 0;
+    border-radius: 14px;
+    transition: all 0.3s ease;
+}
+
+.aviso-btn:hover:enabled {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(101, 162, 166, 0.40);
+}
+
+.aviso-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ========================================
    PÁGINA DE INICIO (INDEX)
    ======================================== */
 .home-container {

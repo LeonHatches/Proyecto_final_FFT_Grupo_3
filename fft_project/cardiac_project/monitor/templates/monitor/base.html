@@ -31,5 +31,9 @@
             </p>
         </div>
     </footer>
+
+    {% if not request.session.terminos_aceptados %}
+        {% include "monitor/disclaimer.html" %}
+    {% endif %}
 </body>
 </html>
