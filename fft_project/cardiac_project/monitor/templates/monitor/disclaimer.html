@@ -1,41 +1,48 @@
 <div class="modal fade" id="aviso-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="avisoModalLabel" aria-hidden="true">
-    {% comment %}  {% endcomment %}
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content aviso-modal-content">
 
-            <!-- Formulario de terminos y condiciones -->
+            <!-- Formulario -->
             <form method="post" action="{{ request.path }}">
-                {% csrf_token %} 
-                <div class="modal-header">
-                    <h5 class="modal-title" id="avisoModalLabel">⚠️ Aviso Legal Obligatorio</h5>
+                {% csrf_token %}
+
+                <!-- Texto de terminos y condiciones -->
+                <div class="modal-header aviso-modal-header">
+                    <h5 class="modal-title" id="avisoModalLabel">Aviso Legal - Terminos y Condiciones</h5>
                 </div>
 
-                <div class="modal-body">
-                    <p class="text-justify">
-                        Este sistema analiza señales de audio para detectar posibles anomalías en el pulso. No reemplaza una evaluación médica profesional.
-                    </p>
-                    <p>
-                        Si presentas síntomas de salud, consulta con un especialista o servicio médico.
+                <div class="modal-body aviso-modal-body">
+                    <p class="aviso-text">
+                        Este sistema analiza señales de audio para detectar posibles anomalías en el pulso. 
+                        <strong>No reemplaza una evaluación médica profesional.</strong>
                     </p>
 
-                    <div class="form-check mt-3">
+                    <p class="aviso-text">
+                        Si presentas síntomas relacionados con tu salud, consulta con un especialista o servicio médico.
+                    </p>
+
+                    <div class="form-check mt-4 aviso-check">
                         <input class="form-check-input" type="checkbox" id="check-aceptar" name="terminos_aceptados">
                         <label class="form-check-label" for="check-aceptar">
-                            Acepto los términos y condiciones
+                            He leído y acepto los términos y condiciones.
                         </label>
                     </div>
                 </div>
 
-                <div class="modal-footer">
-                    <button type="submit" id="btn-aceptar" class="btn btn-primary btn-lg w-100" disabled>
+
+                <!-- Botón de continuar -->
+                <div class="modal-footer aviso-modal-footer">
+                    <button type="submit" id="btn-aceptar" class="btn btn-primary btn-lg w-100 aviso-btn" disabled>
                         Continuar
                     </button>
                 </div>
 
             </form>
+
         </div>
     </div>
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
