@@ -66,32 +66,41 @@ std::vector<double> filtrar_frecuencias(
     double sample_rate)
 {
     size_t N = audio.size();
-    std::vector<std::complex<double>> spectrum(N);
-
-    // Copiar señal real → complejo
+    
+    size_t N_fft = 1;
+    while (N_fft < N)
+        N_fft *= 2;
+    
+    std::vector<std::complex<double>> spectrum(N_fft, 0.0);
+    
+    // Copiar solo los N samples originales
     for (size_t i = 0; i < N; i++)
         spectrum[i] = std::complex<double>(audio[i], 0.0);
-
+    
     // FFT
     fft(spectrum);
-
-    // Crear máscara
-    for (size_t i = 0; i < N; i++)
+    
+    // Filtrar (con manejo correcto de frecuencias)
+    for (size_t i = 0; i < N_fft; i++)
     {
-        double freq = (sample_rate * i) / N;
-
-        if (freq < 20.0 || freq > 200.0)
-            spectrum[i] = 0.0; // filtrar fuera del rango
+        double freq;
+        if (i <= N_fft / 2)
+            freq = (sample_rate * i) / N_fft;
+        else
+            freq = (sample_rate * (N_fft - i)) / N_fft;
+        
+        if (freq < 20.0 || freq > 150.0)
+            spectrum[i] = 0.0;
     }
-
-    // FFT inversa
+    
+    // IFFT
     ifft(spectrum);
-
-    // Volver a señal real
+    
+    // Retornar solo los N samples originales (sin padding)
     std::vector<double> filtered(N);
     for (size_t i = 0; i < N; i++)
         filtered[i] = spectrum[i].real();
-
+    
     return filtered;
 }
 
@@ -108,7 +117,7 @@ std::vector<double> calcular_envolvente(
         abs_signal[i] = std::abs(audio[i]);
 
     // Tamaño de ventana de 50 ms
-    int window_size = std::max(3, (int)(0.05 * sample_rate));
+    int window_size = std::max(3, (int)(0.06 * sample_rate));
     if (window_size % 2 == 0)
         window_size++;
 
@@ -124,7 +133,7 @@ std::vector<double> calcular_envolvente(
         for (int j = -half; j <= half; j++)
         {
             int idx = i + j;
-            if (idx >= 0 && idx < N)
+            if (idx >= 0 && idx < (int) N)
             {
                 sum += abs_signal[idx];
                 count++;
@@ -144,8 +153,8 @@ std::vector<int> detectar_picos(
     std::vector<int> peaks;
 
     double max_env = *std::max_element(env.begin(), env.end());
-    double height = max_env * 0.40;
-    int min_distance = (int)(0.25 * sample_rate);
+    double height = max_env * 0.3;
+    int min_distance = (int)(0.48 * sample_rate);
 
     int last_peak = -min_distance;
 
