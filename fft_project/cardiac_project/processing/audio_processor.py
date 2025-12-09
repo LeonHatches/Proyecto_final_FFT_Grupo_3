@@ -4,6 +4,12 @@ from scipy.fft import rfft, rfftfreq, irfft
 import wave
 from datetime import datetime
 
+LOW = 20.0
+HIGH = 150.0
+WEIGHT = 0.3
+DIST = 0.48
+VENT = 0.06
+
 # Intenta importar el módulo C++
 try:
     from processing.cpp_bridge import process_audio_cpp, CPP_AVAILABLE
@@ -104,7 +110,7 @@ class AudioProcessor:
         frequencies = rfftfreq(n, d=1/sample_rate)
 
         # Crea el filtro para frecuencias entre 20 y 200
-        mask = (frequencies >= 20.0) & (frequencies <= 200.0)
+        mask = (frequencies >= LOW) & (frequencies <= HIGH)
 
         # Crea filtro de multiplicación en el dominio de la frecuencia y FFT inversa
         filtered_spectrum = spectrum * mask
@@ -119,8 +125,8 @@ class AudioProcessor:
         envelope = self._calculate_envelope(audio_data, sample_rate)
 
         # Parámetros de detección
-        height = np.max(envelope) * 0.4
-        distance = int(0.25 * sample_rate) 
+        height = np.max(envelope) * WEIGHT
+        distance = int(DIST * sample_rate) 
         
         # Detectar picos
         peaks, _ = signal.find_peaks(
@@ -137,7 +143,7 @@ class AudioProcessor:
         abs_signal = np.abs(audio_data)
         
         # Ventana para suavizado (50ms)
-        window_size = int(0.05 * sample_rate)
+        window_size = int(VENT * sample_rate)
         if window_size % 2 == 0:
             window_size += 1
         
