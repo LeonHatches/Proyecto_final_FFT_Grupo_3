@@ -1,6 +1,7 @@
 
 import os
 import sys
+from datetime import datetime
 
 # Forzar uso de Python puro en caso de emergencia
 FORCE_PYTHON_ONLY = False
@@ -32,6 +33,7 @@ def process_audio_cpp(audio_list, sample_rate):
     
     # Convertir el objeto ResultadoAnalisis a diccionario Python
     return {
+        'fecha':         datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         'bpm':           float(resultado.bpm),
         'num_picos':     int(resultado.num_picos),
         'bradicardia':   bool(resultado.bradicardia),
