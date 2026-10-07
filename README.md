@@ -264,5 +264,3 @@ El proyecto obtuvo el **3.er lugar en la Feria de Proyectos de Ingeniería de Si
 - Fernando G. Luque
 - Jose M. Morocco
 - Joaquin A. Quispe
-
-Repositorio mantenido por [LeonHatches](https://github.com/LeonHatches).
