@@ -2,7 +2,7 @@
 
 Aplicación web académica desarrollada con **Django, Python y C++** para procesar audio de pulso mediante la **Transformada Rápida de Fourier (FFT)**, estimar pulsaciones por minuto (BPM), calcular intervalos RR y detectar variaciones básicas del ritmo.
 
-> Feria de Proyectos de Ingeniería de Sistemas, Universidad Nacional de San Agustín de Arequipa (UNSA), diciembre de 2025.**
+> **Feria de Proyectos de Ingeniería de Sistemas, Universidad Nacional de San Agustín de Arequipa (UNSA), diciembre de 2025.**
 
 ## Descripción
 
