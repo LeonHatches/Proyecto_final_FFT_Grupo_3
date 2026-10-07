@@ -1,40 +1,39 @@
-# Detector de anomalías en el pulso mediante FFT
+# Transformada Rápida de Fourier para la Detección de Anomalías en Audio de Pulso
 
-Aplicación web desarrollada con **Django, Python y C++** para analizar audio cardíaco en formato WAV, estimar las pulsaciones por minuto (BPM), calcular intervalos RR y señalar posibles anomalías a partir del procesamiento de la señal.
+Aplicación web académica desarrollada con **Django, Python y C++** para procesar audio de pulso mediante la **Transformada Rápida de Fourier (FFT)**, estimar pulsaciones por minuto (BPM), calcular intervalos RR y detectar variaciones básicas del ritmo.
 
 > 🏆 **3.er lugar — Feria de Proyectos de Ingeniería de Sistemas, Universidad Nacional de San Agustín de Arequipa (UNSA), diciembre de 2025.**
 
 ## Descripción
 
-El sistema permite trabajar con una grabación realizada desde el navegador o con un archivo WAV cargado por el usuario. La señal se procesa mediante técnicas de análisis en el dominio de la frecuencia y detección de picos para obtener métricas asociadas al pulso.
+El sistema permite cargar un archivo WAV o realizar una grabación desde el navegador. La señal se normaliza, se transforma al dominio de la frecuencia mediante FFT, se filtra y luego se reconstruye con IFFT para facilitar la detección de picos asociados a los latidos.
 
-El procesamiento principal cuenta con una implementación nativa en **C++17**, integrada con Python mediante **pybind11**. Si la extensión nativa no está disponible, el sistema utiliza una implementación alternativa en Python con **NumPy** y **SciPy**.
+A partir de estos picos se calculan los intervalos RR y los BPM, generando alertas indicativas ante posibles casos de bradicardia, taquicardia o irregularidad del ritmo.
+
+La arquitectura separa la interfaz web, el backend en Django, el procesamiento de audio, el puente entre Python y C++ y el módulo nativo de alto rendimiento.
 
 ## Funcionalidades
 
-- Grabación de audio desde el navegador mediante el micrófono.
-- Carga de archivos WAV por selección o arrastrar y soltar.
-- Validación de archivos WAV.
-- Límite de carga de hasta 50 MB.
-- Procesamiento mediante FFT/IFFT.
-- Filtrado de frecuencias de interés entre **20 y 150 Hz**.
-- Cálculo de la envolvente de la señal.
-- Detección de picos.
+- Grabación de audio desde el navegador.
+- Carga de archivos WAV mediante selección o arrastrar y soltar.
+- Validación de formato WAV.
+- Procesamiento mediante FFT e IFFT.
+- Filtrado espectral entre **20 y 150 Hz**.
+- Cálculo de envolvente y detección de picos.
 - Estimación de **BPM**.
 - Cálculo de **intervalos RR**.
-- Detección indicativa de:
-  - bradicardia;
-  - taquicardia;
-  - irregularidad a partir de la variabilidad de intervalos RR.
+- Análisis de variabilidad mediante SDNN.
+- Detección indicativa de bradicardia, taquicardia e irregularidad.
 - Visualización web de resultados.
-- Generación de un identificador por análisis y almacenamiento temporal de resultados en sesión.
+- Procesamiento principal en **C++17** integrado con Python mediante **pybind11**.
+- Implementación alternativa en Python con **NumPy** y **SciPy**.
 
 ## Flujo de procesamiento
 
 ```text
 Audio WAV
    ↓
-Normalización
+Validación y normalización
    ↓
 FFT
    ↓
@@ -42,13 +41,13 @@ Filtrado 20–150 Hz
    ↓
 IFFT
    ↓
-Cálculo de envolvente
+Envolvente de la señal
    ↓
 Detección de picos
    ↓
 Intervalos RR
    ↓
-BPM y análisis de variabilidad
+BPM + análisis de variabilidad
    ↓
 Resultados
 ```
@@ -61,19 +60,35 @@ Resultados
 | Procesamiento | NumPy, SciPy |
 | Módulo nativo | C++17, pybind11 |
 | Frontend | HTML, CSS, JavaScript, Bootstrap |
-| Persistencia local | SQLite / sesiones de Django |
-| Audio | WAV, Web Audio API / MediaDevices |
+| Persistencia | SQLite y sesiones de Django |
+| Audio | WAV, MediaDevices / Web Audio API |
+
+## Arquitectura
+
+```text
+Interfaz web
+     ↓
+Backend Django
+     ↓
+Procesador de audio
+     ↓
+Bridge Python ↔ C++
+     ↓
+Módulo nativo C++
+```
+
+La interfaz gestiona la carga o grabación del audio. Django recibe el archivo y coordina el análisis. El procesador valida y normaliza la señal; posteriormente utiliza el módulo nativo en C++ cuando está disponible y, en caso contrario, recurre a la implementación en Python.
 
 ## Requisitos del audio
 
-Para el procesamiento desde archivo, el backend espera:
+Para archivos cargados, el backend espera:
 
 - formato **WAV**;
 - audio **mono**;
 - muestras de **16 bits**;
 - tamaño máximo de **50 MB**.
 
-Las grabaciones realizadas desde la interfaz web se convierten a WAV antes de enviarse al servidor.
+Las grabaciones realizadas desde la interfaz se convierten a WAV antes de ser enviadas al servidor.
 
 ## Instalación
 
@@ -113,50 +128,48 @@ cd fft_project/cardiac_project
 python manage.py migrate
 ```
 
-### 5. Ejecutar el servidor
+### 5. Ejecutar la aplicación
 
 ```bash
 python manage.py runserver
 ```
 
-Luego abre:
+Abrir en el navegador:
 
 ```text
 http://127.0.0.1:8000/
 ```
 
-## Módulo C++ opcional
+## Módulo C++
 
-El proyecto incluye una extensión nativa que implementa el procesamiento en C++ y se comunica con Python mediante pybind11.
-
-Código fuente:
+El procesamiento nativo se encuentra en:
 
 ```text
 fft_project/cpp_module/cardiac_native.cpp
 ```
 
-Configuración de compilación:
+La extensión se configura mediante:
 
 ```text
 fft_project/cpp_module/setup.py
 ```
 
-Para compilar localmente:
+Para compilarla:
 
 ```bash
 cd fft_project/cpp_module
 python setup.py build_ext --inplace
 ```
 
-El binario generado debe quedar disponible para el módulo:
+El módulo compilado debe quedar disponible para:
 
 ```text
 fft_project/cardiac_project/processing/
 ```
 
-El repositorio contiene un binario `.pyd` y bibliotecas de ejecución para Windows. Si dicho binario no es compatible con tu versión de Python o tu sistema operativo, recompila la extensión localmente. Si la extensión C++ no puede cargarse, la aplicación utiliza automáticamente el procesamiento equivalente en Python.
+El repositorio incluye un binario `.pyd` orientado a Windows. Si no es compatible con tu versión de Python o tu sistema operativo, se recomienda recompilarlo localmente.
 
-> El `setup.py` actual utiliza opciones de compilación compatibles con toolchains tipo GCC/MinGW y C++17.
+Si la extensión C++ no puede cargarse, la aplicación utiliza automáticamente la implementación equivalente en Python.
 
 ## Estructura principal
 
@@ -185,40 +198,71 @@ Proyecto_final_FFT_Grupo_3/
 
 ## Algoritmo
 
-La implementación procesa la señal siguiendo estas etapas:
+El procesamiento implementado sigue estas etapas:
 
 1. Lectura y normalización del audio.
-2. Transformada rápida de Fourier (**FFT**).
-3. Eliminación de componentes fuera del rango de 20–150 Hz.
-4. Transformada inversa (**IFFT**).
-5. Obtención de una envolvente suavizada.
-6. Detección de máximos separados por una distancia mínima.
-7. Cálculo de intervalos RR entre picos consecutivos.
-8. Estimación de BPM a partir del intervalo RR promedio.
-9. Evaluación de umbrales para generar alertas indicativas.
+2. Aplicación de FFT.
+3. Zero-padding cuando es necesario para trabajar con una longitud potencia de 2.
+4. Filtrado de componentes fuera del rango de 20–150 Hz.
+5. Reconstrucción mediante IFFT.
+6. Cálculo de la envolvente.
+7. Detección de picos.
+8. Cálculo de intervalos RR.
+9. Estimación de BPM.
+10. Evaluación de variabilidad y generación de alertas.
 
-Actualmente el sistema utiliza, entre otros criterios:
+Entre los criterios implementados se encuentran:
 
 - **Bradicardia:** BPM < 60.
 - **Taquicardia:** BPM > 100.
-- **Variabilidad RR:** análisis mediante desviación estándar de los intervalos (SDNN).
+- **Irregularidad:** análisis de la desviación estándar de los intervalos RR (SDNN).
 
-## Consideraciones de seguridad
+## Resultados del proyecto académico
 
-Este proyecto fue desarrollado con fines **académicos y demostrativos**.
+Durante la evaluación documentada del proyecto:
 
-**No es un dispositivo médico, no ha sido presentado como herramienta clínicamente validada y no debe utilizarse para diagnosticar enfermedades ni sustituir la evaluación de un profesional de salud.**
+- se ejecutaron **8 pruebas unitarias**, todas exitosas;
+- en una prueba funcional con una señal sintética equivalente a 75 BPM, el sistema obtuvo aproximadamente **75.05 BPM**;
+- se validó el reconocimiento de casos simulados de ritmo normal, bradicardia, taquicardia e irregularidad;
+- el tiempo de procesamiento de una señal típica de aproximadamente 10 000 muestras se mantuvo por debajo de unos pocos milisegundos;
+- las pruebas de complejidad mostraron un comportamiento consistente con **O(N log N)**.
 
-La propia aplicación muestra un aviso legal antes de permitir el uso del sistema.
+Estos resultados corresponden al entorno experimental y académico descrito en el trabajo del proyecto, principalmente con señales controladas o sintéticas.
 
-Además, la configuración actual de Django está preparada para desarrollo local (`DEBUG = True`). Antes de un despliegue real deben revisarse, como mínimo, la gestión de `SECRET_KEY`, `ALLOWED_HOSTS`, HTTPS, archivos subidos y demás configuraciones de seguridad.
+## Limitaciones
+
+El proyecto es un **prototipo académico** y no una herramienta médica certificada.
+
+Las pruebas documentadas señalan que todavía se requiere:
+
+- validación con señales reales en condiciones diversas;
+- evaluación con bases de datos cardíacas estándar;
+- pruebas con distintos usuarios y entornos;
+- refinamiento de parámetros frente a ruido y variaciones de grabación;
+- validación clínica y cumplimiento de estándares médicos y regulatorios.
+
+## Aviso
+
+**Este sistema no reemplaza una evaluación médica profesional y no debe utilizarse para realizar diagnósticos clínicos.**
+
+La propia aplicación muestra un aviso de términos y condiciones antes de permitir su uso.
+
+Además, la configuración actual de Django corresponde a un entorno de desarrollo. Antes de cualquier despliegue deben revisarse configuraciones como `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, HTTPS y manejo seguro de archivos.
 
 ## Contexto académico
 
-Proyecto desarrollado como trabajo grupal de Ingeniería de Sistemas en la **Universidad Nacional de San Agustín de Arequipa (UNSA)**.
+Trabajo titulado **“Transformada Rápida de Fourier para la Detección de Anomalías en Audio de Pulso”**, desarrollado en la Universidad Nacional de San Agustín de Arequipa.
 
 El proyecto obtuvo el **3.er lugar en la Feria de Proyectos de Ingeniería de Sistemas de la UNSA, diciembre de 2025**.
 
-## Autoría
+## Integrantes
 
-Proyecto académico grupal. Repositorio mantenido por [LeonHatches](https://github.com/LeonHatches).
+- Tania L. Ayque
+- Cristhian M. Bravo
+- Romina G. Camargo
+- León Hatches
+- Fernando G. Luque
+- Jose M. Morocco
+- Joaquin A. Quispe
+
+Repositorio mantenido por [LeonHatches](https://github.com/LeonHatches).
